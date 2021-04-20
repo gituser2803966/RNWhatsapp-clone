@@ -7,53 +7,58 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   StyleSheet,
-  SafeAreaView,
-  Dimensions,
   TextInput,
-  Alert,
 } from 'react-native';
-// import
-import {useAuth} from '../context/AuthContext';
-export default function Signin({navigation}) {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
-  const {signIn} = useAuth().authUser;
+import {width} from '../utilis/contants';
+// import { usersCollection } from '../database';
+import firestore from '@react-native-firebase/firestore';
+export default function Signin({navigation, route}) {
+  const {email, password} = route.params;
 
-  const handleSignin = () => {
-    signIn({email, password});
+  const [firstName, setFirstName] = useState();
+  const [lastName, setLastName] = useState();
+
+  const handleSignUp = () => {
+    firestore().collection("users").get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            // doc.data() is never undefined for query doc snapshots
+            console.log(doc.id, " => ", doc.data());
+        });
+    });
+    // .then((docRef) => {
+    //     console.log("Document written with ID: ", docRef.id);
+    // })
+    // .catch((error) => {
+    //     console.error("Error adding document: ", error);
+    // });
   };
 
   return (
     <KeyboardAvoidingView style={styles.containerView} behavior="padding">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.loginScreenContainer}>
+          <View style={styles.marginVer}>
+            <Text></Text>
+          </View>
           <View style={styles.loginFormView}>
-            <Text style={styles.logoText}>whatsapp</Text>
             <TextInput
-              placeholder="Username"
+              placeholder="enter your first name"
               placeholderColor="#c4c3cb"
               style={styles.loginFormTextInput}
-              onChangeText={value => setEmail(value)}
-              value={email}
+              onChangeText={value => setFirstName(value)}
+              value={firstName}
             />
             <TextInput
-              placeholder="Password"
+              placeholder="enter your last name"
               placeholderColor="#c4c3cb"
               style={styles.loginFormTextInput}
-              onChangeText={value => setPassword(value)}
-              value={password}
+              onChangeText={value => setLastName(value)}
+              value={lastName}
               secureTextEntry={true}
             />
 
-            <Pressable
-              style={styles.loginButton}
-              onPress={() => handleSignin()}>
-              <Text style={styles.loginButtonText}>LOGIN</Text>
-            </Pressable>
-            <Pressable
-              style={styles.signupButton}
-              onPress={() => navigation.navigate('signup')}>
-              <Text style={styles.signupText}>signup now</Text>
+            <Pressable style={styles.Button} onPress={() => handleSignUp()}>
+              <Text style={styles.loginButtonText}>SIGNUP</Text>
             </Pressable>
           </View>
         </View>
@@ -61,8 +66,6 @@ export default function Signin({navigation}) {
     </KeyboardAvoidingView>
   );
 }
-
-const {height, width} = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   containerView: {
@@ -73,13 +76,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoText: {
-    fontSize: 40,
-    fontWeight: '800',
-    marginTop: 150,
-    marginBottom: 30,
-    textAlign: 'center',
-  },
+
   loginFormView: {
     flex: 1,
   },
@@ -97,7 +94,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 5,
   },
-  loginButton: {
+  Button: {
     backgroundColor: '#3897f1',
     borderRadius: 5,
     padding: 10,
@@ -116,9 +113,5 @@ const styles = StyleSheet.create({
     height: 45,
     marginTop: 10,
     backgroundColor: 'transparent',
-  },
-  signupText: {
-    fontSize: 14,
-    color: '#3897f1',
   },
 });
