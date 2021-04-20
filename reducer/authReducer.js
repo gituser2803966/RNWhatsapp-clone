@@ -1,4 +1,4 @@
-const authReducer = (state, action) => {
+const AuthReducer = (state, action) => {
   switch (action.type) {
     case 'RESTORE_TOKEN':
       return {
@@ -23,6 +23,8 @@ const authReducer = (state, action) => {
       return state;
   }
 };
+
+export default AuthReducer;
 
 // export const authReducer = React.useReducer(
 //   (state, action) => {

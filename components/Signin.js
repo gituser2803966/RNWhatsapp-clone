@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,18 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import auth from '@react-native-firebase/auth';
-
-
+// import 
+import { useAuth } from '../context/AuthContext';
 export default function Signin({navigation}) {
+
+    const [email,setEmail] = useState();
+    const [password, setPassword] =useState();
+  const { signIn } = useAuth().authUser;
+  
+  const handleSignin = () =>{
+    signIn({email,password})
+  }
+
   return (
     <KeyboardAvoidingView style={styles.containerView} behavior="padding">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -26,15 +34,21 @@ export default function Signin({navigation}) {
               placeholder="Username"
               placeholderColor="#c4c3cb"
               style={styles.loginFormTextInput}
+              onChangeText={value=>setEmail(value)}
+              value={email}
             />
             <TextInput
               placeholder="Password"
               placeholderColor="#c4c3cb"
               style={styles.loginFormTextInput}
+              onChangeText={value=>setPassword(value)}
+              value={password}
               secureTextEntry={true}
             />
 
-            <Pressable style={styles.loginButton}>
+            <Pressable style={styles.loginButton}
+              onPress={()=>handleSignin()}
+            >
               <Text style={styles.loginButtonText}>LOGIN</Text>
             </Pressable>
             <Pressable
