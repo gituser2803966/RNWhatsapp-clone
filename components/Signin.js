@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState ,useContext} from 'react';
 import {
   View,
   Text,
@@ -12,12 +12,11 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-// import
-import {useAuth} from '../context/AuthContext';
-export default function Signin({navigation}) {
+import { AuthContext } from '../App';
+export default function SignIn({navigation}) {
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
-  const {signIn} = useAuth().authUser;
+  const {signIn} = useContext(AuthContext);
 
   const handleSignin = () => {
     signIn({email, password});
@@ -52,7 +51,7 @@ export default function Signin({navigation}) {
             </Pressable>
             <Pressable
               style={styles.signupButton}
-              onPress={() => navigation.navigate('signup')}>
+              onPress={() => navigation.navigate('signUpEmail')}>
               <Text style={styles.signupText}>signup now</Text>
             </Pressable>
           </View>

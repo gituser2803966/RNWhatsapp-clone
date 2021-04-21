@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState,useContext} from 'react';
 import {
   View,
   Text,
@@ -10,27 +10,20 @@ import {
   TextInput,
 } from 'react-native';
 import {width} from '../utilis/contants';
-// import { usersCollection } from '../database';
-import firestore from '@react-native-firebase/firestore';
+import { database } from '../database';
+import { AuthContext } from '../App';
 export default function Signin({navigation, route}) {
+  const { signUp } = useContext(AuthContext);
   const {email, password} = route.params;
-
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
 
   const handleSignUp = () => {
-    firestore().collection("users").get().then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-            // doc.data() is never undefined for query doc snapshots
-            console.log(doc.id, " => ", doc.data());
-        });
-    });
-    // .then((docRef) => {
-    //     console.log("Document written with ID: ", docRef.id);
-    // })
-    // .catch((error) => {
-    //     console.error("Error adding document: ", error);
-    // });
+    const userRegistrationInformation = {
+      email,password,firstName,lastName
+    }
+    signUp(userRegistrationInformation)
+
   };
 
   return (
@@ -54,7 +47,6 @@ export default function Signin({navigation, route}) {
               style={styles.loginFormTextInput}
               onChangeText={value => setLastName(value)}
               value={lastName}
-              secureTextEntry={true}
             />
 
             <Pressable style={styles.Button} onPress={() => handleSignUp()}>

@@ -1,18 +1,21 @@
 const AuthReducer = (state, action) => {
   switch (action.type) {
     case 'RESTORE_TOKEN':
+      console.log("dispatch signIn")
       return {
         ...state,
         userToken: action.token,
         isLoading: false,
       };
     case 'SIGN_IN':
+      console.log("dispatch signIn")
       return {
         ...state,
         isSignout: false,
         userToken: action.token,
       };
     case 'SIGN_OUT':
+      console.log("dispatch signIn")
       return {
         ...state,
         isSignout: true,
