@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Image,
   StyleSheet,
@@ -12,49 +12,61 @@ import {width} from '../utilis/contants';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import app from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
+import * as Progress from 'react-native-progress';
 
-function SettingModal(){
+function SettingModal() {
   const user = auth().currentUser;
-  const nameToDisplay = user.displayName.substring(0,1);
+  const nameToDisplay = user.displayName.substring(0, 1);
   const [imageSource, setImageSource] = useState();
+  const [progress, setProgress] = useState(0);
+  const [indeterminate, setIndeterminate] = useState(false);
 
-  function showlaunchImageLibrary(){
+  function showlaunchImageLibrary() {
     launchImageLibrary(
       {
         mediaType: 'photo',
         includeBase64: true,
       },
-      (response) => {
-        console.log(response)
-        if(response.didCancel){
+      response => {
+        console.log(response);
+        if (response.didCancel) {
           // user canceled
           setImageSource('');
-          return
+          return;
         }
         setImageSource(response.uri);
         uploadImageToFireBaseStorage(response);
       },
     );
-  };
+  }
 
   function uploadImageToFireBaseStorage(file) {
     const storageRef = storage().ref();
-  
+    let progressBar = 0;
     // [START storage_upload_handle_error]
     // Create the file metadata
     var metadata = {
-      contentType: 'image/jpeg'
+      contentType: 'image/jpeg',
     };
-  
+
     // Upload file and metadata to the object 'images/mountains.jpg'
-    var uploadTask = storageRef.child('images/' + file.fileName).putFile(file.uri, metadata);
-  
+    var uploadTask = storageRef
+      .child('images/' + file.fileName)
+      .putFile(file.uri, metadata);
+
     // Listen for state changes, errors, and completion of the upload.
-    uploadTask.on(app.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
-      (snapshot) => {
+    uploadTask.on(
+      app.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+      snapshot => {
         // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
+        var progressPercent =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progressPercent + '% done');
+        progressBar += Math.round(progressPercent) / 100;
+        setProgress(progressBar);
+        if (progressPercent == 100) {
+          setProgress(1);
+        }
         switch (snapshot.state) {
           case app.storage.TaskState.PAUSED: // or 'paused'
             console.log('Upload is paused');
@@ -63,8 +75,8 @@ function SettingModal(){
             console.log('Upload is running');
             break;
         }
-      }, 
-      (error) => {
+      },
+      error => {
         // A full list of error codes is available at
         // https://firebase.google.com/docs/storage/web/handle-errors
         switch (error.code) {
@@ -74,48 +86,69 @@ function SettingModal(){
           case 'storage/canceled':
             // User canceled the upload
             break;
-  
+
           // ...
-  
+
           case 'storage/unknown':
             // Unknown error occurred, inspect error.serverResponse
             break;
         }
-      }, 
+      },
       () => {
         // Upload completed successfully, now we can get the download URL
-        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            user.updateProfile({
-              photoURL:downloadURL,
-            })
+        uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
+          user.updateProfile({
+            photoURL: downloadURL,
+          });
         });
-      }
+      },
     );
     // [END storage_upload_handle_error]
   }
 
+  // function animate() {
+  //   let progress = 0;
+  //   setTimeout(() => {
+  //     // this.setState({ indeterminate: false });
+  //     setInterval(() => {
+  //       console.log('Math.random(): ', Math.random());
+  //       progress += Math.random() / 5;
+  //       if (progress > 1) {
+  //         progress = 1;
+  //       }
+  //       setProgress(progress);
+  //     }, 1000);
+  //   }, 500);
+  // }
 
+  // useEffect(() => {
+  //   // animate();
+  // }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.info}>
-        <Pressable
-          style={styles.imageView}
-          onPress={showlaunchImageLibrary}
-        >
-          {
-           imageSource || user.photoURL ?
-              <Image 
+        <Pressable style={styles.imageView} onPress={showlaunchImageLibrary}>
+          {imageSource || user.photoURL ? (
+            <>
+              <Image
                 style={styles.userImage}
                 source={{
-                  uri: imageSource || user.photoURL 
+                  uri: imageSource || user.photoURL,
                 }}
               />
-            :
+              <Progress.Bar
+                animated={true}
+                progress={progress}
+                indeterminate={indeterminate}
+                width={50}
+              />
+            </>
+          ) : (
             <View style={styles.nonImageView}>
               <Text>{nameToDisplay}</Text>
             </View>
-          }
+          )}
         </Pressable>
         <View style={styles.userInfo}>
           <Text>{user.displayName}</Text>
@@ -124,7 +157,7 @@ function SettingModal(){
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -141,6 +174,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 50,
+    marginBottom: 5,
   },
   imageView: {
     alignItems: 'center',
@@ -149,8 +183,8 @@ const styles = StyleSheet.create({
   nonImageView: {
     width: 50,
     height: 50,
-    alignItems:"center",
-    justifyContent:"center",
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#1DA1F2',
     borderRadius: 50,
   },
