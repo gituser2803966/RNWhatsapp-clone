@@ -13,7 +13,7 @@ const Stack = createNativeStackNavigator();
 export default function Dashboard({navigation}) {
   const {signOut} = useContext(AuthContext);
   const user = auth().currentUser;
-  console.log(user)
+  console.log(user);
   //signOut fun
   const handleSignOut = () => {
     signOut();
@@ -25,15 +25,15 @@ export default function Dashboard({navigation}) {
   };
 
   // header center
-  const ImageTitle = () => {
+  const ImageTitleMainTab = () => {
     const NameToDisplay =
       (user.displayName && user.displayName.substring(0, 1)) || '';
     return (
-      <View style={styles.container}>
-        <Pressable
-          onPress={() => {
-            handlePress();
-          }}>
+      <Pressable
+        onPress={() => {
+          handlePress();
+        }}>
+        <View style={styles.container}>
           {user.photoURL ? (
             <Image
               style={styles.userImage}
@@ -44,13 +44,13 @@ export default function Dashboard({navigation}) {
           ) : (
             <Text>{NameToDisplay}</Text>
           )}
-        </Pressable>
-      </View>
+        </View>
+      </Pressable>
     );
   };
 
   //header Left
-  const HeaderLeft = () => {
+  const HeaderLeftSettingScreen = () => {
     return (
       <View style={styles.headerLeft}>
         <Pressable
@@ -64,7 +64,7 @@ export default function Dashboard({navigation}) {
   };
 
   // header right
-  const HeaderRight = () => {
+  const HeaderRightSettingScreen = () => {
     return (
       <View style={styles.headerLeft}>
         <Pressable
@@ -83,14 +83,14 @@ export default function Dashboard({navigation}) {
         name="home"
         component={MainTab}
         options={{
-          headerCenter: props => <ImageTitle {...props} />,
+          headerCenter: props => <ImageTitleMainTab {...props} />,
         }}
       />
       <Stack.Screen
         options={{
-          headerLeft: props => <HeaderLeft {...props} />,
+          headerLeft: props => <HeaderLeftSettingScreen {...props} />,
           title: '',
-          headerRight: props => <HeaderRight {...props} />,
+          headerRight: props => <HeaderRightSettingScreen {...props} />,
           // stackPresentation: "fullScreenModal",
         }}
         name="setting"
@@ -110,7 +110,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAF9FC',
   },
   headerLeft: {
-    // padding:20,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',

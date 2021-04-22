@@ -13,27 +13,26 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import app from '@react-native-firebase/app';
 import storage from '@react-native-firebase/storage';
 
-const SettingModal = () => {
+function SettingModal(){
   const user = auth().currentUser;
-  console.log(user)
+  const nameToDisplay = user.displayName.substring(0,1);
   const [imageSource, setImageSource] = useState();
 
-  const showlaunchImageLibrary = () => {
+  function showlaunchImageLibrary(){
     launchImageLibrary(
       {
         mediaType: 'photo',
         includeBase64: true,
       },
-      file => {
-        setImageSource(file.uri);
-        // const storageRef = storage().ref('imagesdssdf/');
-        // console.log(storageRef);
-        // // storage.child()
-        // storageRef.putString(file.base64, 'base64').then(snapshot => {
-        //   console.log('Uploaded a base64 string!');
-        // });
-        uploadImageToFireBaseStorage(file)
-        // console.log(file)
+      (response) => {
+        console.log(response)
+        if(response.didCancel){
+          // user canceled
+          setImageSource('');
+          return
+        }
+        setImageSource(response.uri);
+        uploadImageToFireBaseStorage(response);
       },
     );
   };
@@ -86,7 +85,6 @@ const SettingModal = () => {
       () => {
         // Upload completed successfully, now we can get the download URL
         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-          console.log('download nowwwww....')
             user.updateProfile({
               photoURL:downloadURL,
             })
@@ -96,33 +94,29 @@ const SettingModal = () => {
     // [END storage_upload_handle_error]
   }
 
+
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.info}>
-        <View style={styles.imageContainer}>
-          {user.photoURL || imageSource ? (
-            <Pressable
-              onPress={() => {
-                showlaunchImageLibrary();
-              }}>
-              <Image
-                style={styles.image}
+        <Pressable
+          style={styles.imageView}
+          onPress={showlaunchImageLibrary}
+        >
+          {
+           imageSource || user.photoURL ?
+              <Image 
+                style={styles.userImage}
                 source={{
-                  uri: user.imageURL || imageSource,
+                  uri: imageSource || user.photoURL 
                 }}
               />
-            </Pressable>
-          ) : (
-            <View style={styles.noImageURL}>
-              <Pressable
-                onPress={() => {
-                  showlaunchImageLibrary();
-                }}>
-                <Text>U</Text>
-              </Pressable>
+            :
+            <View style={styles.nonImageView}>
+              <Text>{nameToDisplay}</Text>
             </View>
-          )}
-        </View>
+          }
+        </Pressable>
         <View style={styles.userInfo}>
           <Text>{user.displayName}</Text>
           <Text>{user.email}</Text>
@@ -143,20 +137,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  image: {
+  userImage: {
     width: 50,
     height: 50,
     borderRadius: 50,
   },
-  imageContainer: {
-    backgroundColor: '#1DA1F2',
+  imageView: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  nonImageView: {
     width: 50,
     height: 50,
+    alignItems:"center",
+    justifyContent:"center",
+    backgroundColor: '#1DA1F2',
     borderRadius: 50,
   },
-  noImageURL: {},
   userInfo: {
     paddingLeft: 20,
   },
