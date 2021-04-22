@@ -13,10 +13,11 @@ const Stack = createNativeStackNavigator();
 export default function Dashboard({navigation}) {
   const {signOut} = useContext(AuthContext);
   const user = auth().currentUser;
+  console.log(user)
   //signOut fun
-  const handleSignOut = () =>{
+  const handleSignOut = () => {
     signOut();
-  } 
+  };
 
   // open setting screen
   const handlePress = () => {
@@ -24,7 +25,7 @@ export default function Dashboard({navigation}) {
   };
 
   // header center
-  const LogoTitle = () => {
+  const ImageTitle = () => {
     const NameToDisplay =
       (user.displayName && user.displayName.substring(0, 1)) || '';
     return (
@@ -33,7 +34,16 @@ export default function Dashboard({navigation}) {
           onPress={() => {
             handlePress();
           }}>
-          <Text>{NameToDisplay}</Text>
+          {user.photoURL ? (
+            <Image
+              style={styles.userImage}
+              source={{
+                uri: user.photoURL,
+              }}
+            />
+          ) : (
+            <Text>{NameToDisplay}</Text>
+          )}
         </Pressable>
       </View>
     );
@@ -68,19 +78,18 @@ export default function Dashboard({navigation}) {
   };
 
   return (
-    <Stack.Navigator
-    >
+    <Stack.Navigator>
       <Stack.Screen
         name="home"
         component={MainTab}
         options={{
-          headerCenter: props => <LogoTitle {...props} />,
+          headerCenter: props => <ImageTitle {...props} />,
         }}
       />
       <Stack.Screen
         options={{
           headerLeft: props => <HeaderLeft {...props} />,
-          title: '312312',
+          title: '',
           headerRight: props => <HeaderRight {...props} />,
           // stackPresentation: "fullScreenModal",
         }}
@@ -106,5 +115,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FAF9FC',
+  },
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 50,
+    paddingBottom: 10,
   },
 });

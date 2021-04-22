@@ -1,7 +1,8 @@
-import React, {useState ,useContext} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   Text,
+  ActivityIndicator,
   Pressable,
   Keyboard,
   KeyboardAvoidingView,
@@ -12,14 +13,32 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { AuthContext } from '../App';
+import {AuthContext} from '../App';
 export default function SignIn({navigation}) {
+  const [animating, setAnimating] = useState(false);
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const {signIn} = useContext(AuthContext);
 
   const handleSignin = () => {
-    signIn({email, password});
+    if (email == '') {
+      return Alert.alert('vui lòng nhập vào tài khoản');
+    }
+    if (password == '') {
+      return Alert.alert('vui lòng nhập vào mật khẩu');
+    }
+    setAnimating(true);
+    signIn({email, password})
+      .then(res => console.log(res))
+      .catch(error => {
+        setAnimating(false);
+        if (error.code === 'auth/invalid-email') {
+          return Alert.alert('email không đúng định dạng hoặc không chính xác');
+        }
+        if (error.code === 'auth/wrong-password') {
+          return Alert.alert('Sai mật khẩu');
+        }
+      });
   };
 
   return (
@@ -27,32 +46,41 @@ export default function SignIn({navigation}) {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.loginScreenContainer}>
           <View style={styles.loginFormView}>
-            <Text style={styles.logoText}>whatsapp</Text>
+            <Text style={styles.logoText}>TẤN</Text>
             <TextInput
-              placeholder="Username"
+              autoFocus
+              placeholder="enter your email"
               placeholderColor="#c4c3cb"
               style={styles.loginFormTextInput}
               onChangeText={value => setEmail(value)}
-              value={email}
+              // value={email}
             />
             <TextInput
-              placeholder="Password"
+              placeholder="enter your Password"
               placeholderColor="#c4c3cb"
               style={styles.loginFormTextInput}
               onChangeText={value => setPassword(value)}
-              value={password}
+              // value={password}
               secureTextEntry={true}
             />
 
             <Pressable
               style={styles.loginButton}
               onPress={() => handleSignin()}>
-              <Text style={styles.loginButtonText}>LOGIN</Text>
+              {animating ? (
+                <ActivityIndicator
+                  animating={animating}
+                  size="small"
+                  color="#ffffff"
+                />
+              ) : (
+                <Text style={styles.loginButtonText}>ĐĂNG NHẬP</Text>
+              )}
             </Pressable>
             <Pressable
               style={styles.signupButton}
               onPress={() => navigation.navigate('signUpEmail')}>
-              <Text style={styles.signupText}>signup now</Text>
+              <Text style={styles.signupText}>đăng kí ngay</Text>
             </Pressable>
           </View>
         </View>
