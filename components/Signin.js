@@ -16,22 +16,26 @@ import {
 import {AuthContext} from '../App';
 export default function SignIn({navigation}) {
   const [animating, setAnimating] = useState(false);
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const {signIn} = useContext(AuthContext);
 
   const handleSignin = () => {
-    if (email == '') {
+    if (email === '' ) {
       return Alert.alert('vui lòng nhập vào tài khoản');
     }
-    if (password == '') {
+    if (password === '') {
       return Alert.alert('vui lòng nhập vào mật khẩu');
     }
     setAnimating(true);
     signIn({email, password})
-      .then(res => console.log(res))
+      .then()
       .catch(error => {
+        console.log(error)
         setAnimating(false);
+        if (error.code === 'auth/user-not-found') {
+          return Alert.alert('không tìm thấy người dùng hiện tại');
+        }
         if (error.code === 'auth/invalid-email') {
           return Alert.alert('email không đúng định dạng hoặc không chính xác');
         }

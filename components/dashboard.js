@@ -1,11 +1,14 @@
-import React, {useContext} from 'react';
+import React, {useContext,useEffect} from 'react';
 import {Image, View, Text, StyleSheet, Pressable} from 'react-native';
 import {AuthContext} from '../App';
 import MainTab from '../screens/MainTab';
 import SettingModal from '../screens/SettingModal';
+import OpenChatScreen from '../screens/OpenChatSreen';
 import {enableScreens} from 'react-native-screens';
 import auth from '@react-native-firebase/auth';
 import {createNativeStackNavigator} from 'react-native-screens/native-stack';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
 
 enableScreens();
 const Stack = createNativeStackNavigator();
@@ -13,7 +16,8 @@ const Stack = createNativeStackNavigator();
 export default function Dashboard({navigation}) {
   const {signOut} = useContext(AuthContext);
   const user = auth().currentUser;
-  console.log(user);
+  var NameToDisplay = (user.displayName && user.displayName.substring(0,1)) || '';
+  // console.log(user)
   //signOut fun
   const handleSignOut = () => {
     signOut();
@@ -24,10 +28,12 @@ export default function Dashboard({navigation}) {
     navigation.navigate('setting');
   };
 
+  const UserImageOnClick = () =>{
+
+  }
+
   // header center
   const ImageTitleMainTab = () => {
-    const NameToDisplay =
-      (user.displayName && user.displayName.substring(0, 1)) || '';
     return (
       <Pressable
         onPress={() => {
@@ -36,7 +42,7 @@ export default function Dashboard({navigation}) {
         <View style={styles.container}>
           {user.photoURL ? (
             <Image
-              style={styles.userImage}
+              style={styles.userImageInConversaations}
               source={{
                 uri: user.photoURL,
               }}
@@ -44,6 +50,35 @@ export default function Dashboard({navigation}) {
           ) : (
             <Text>{NameToDisplay}</Text>
           )}
+        </View>
+      </Pressable>
+    );
+  };
+
+
+  const ImageTitleOpenChat = () => {
+    return (
+      <Pressable
+        onPress={() => {
+          UserImageOnClick();
+        }}>
+        <View style={styles.container}>
+          <Image
+            style={styles.userImageOpenChat}
+            source={{
+              uri: 'https://picsum.photos/100/100'
+            }}
+          />
+          {/* {user.photoURL ? (
+            <Image
+              style={styles.userImage}
+              source={{
+                uri: user.photoURL,
+              }}
+            />
+          ) : (
+            <Text></Text>
+          )} */}
         </View>
       </Pressable>
     );
@@ -57,7 +92,7 @@ export default function Dashboard({navigation}) {
           onPress={() => {
             navigation.goBack();
           }}>
-          <Text>x</Text>
+          <MaterialCommunityIcons name="close" size={16} />
         </Pressable>
       </View>
     );
@@ -76,6 +111,11 @@ export default function Dashboard({navigation}) {
       </View>
     );
   };
+
+  // useEffect(()=>{
+  //   const user = auth().currentUser;
+  //   NameToDisplay = (user.displayName && user.displayName.substring(0,1)) || '';
+  // },[])
 
   return (
     <Stack.Navigator>
@@ -96,6 +136,17 @@ export default function Dashboard({navigation}) {
         name="setting"
         component={SettingModal}
       />
+      <Stack.Screen
+        options={{
+          // headerLeft: props => <HeaderLeftSettingScreen {...props} />,
+          // title: 'User recieve image',
+          headerCenter: props => <ImageTitleOpenChat {...props} />
+          // headerRight: props => <HeaderRightSettingScreen {...props} />,
+          // stackPresentation: "fullScreenModal",
+        }}
+        name="openchat"
+        component={OpenChatScreen}
+      />
     </Stack.Navigator>
   );
 }
@@ -115,10 +166,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FAF9FC',
   },
-  userImage: {
+  userImageInConversaations: {
     width: 40,
     height: 40,
     borderRadius: 50,
-    paddingBottom: 10,
+    // paddingBottom: 10,
+  },
+  userImageOpenChat:{
+    width:40,
+    height:40,
+    borderRadius: 50,
+    // paddingVertical:10,
   },
 });

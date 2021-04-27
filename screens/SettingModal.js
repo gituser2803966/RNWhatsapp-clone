@@ -16,9 +16,10 @@ import * as Progress from 'react-native-progress';
 
 function SettingModal() {
   const user = auth().currentUser;
-  const nameToDisplay = user.displayName.substring(0, 1);
+  const nameToDisplay = (user.displayName && user.displayName.substring(0, 1)) || '...';
   const [imageSource, setImageSource] = useState();
   const [progress, setProgress] = useState(0);
+  const [isShowProgressBar, setIsShowProgressBar] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
 
   function showlaunchImageLibrary() {
@@ -62,10 +63,13 @@ function SettingModal() {
         var progressPercent =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         console.log('Upload is ' + progressPercent + '% done');
+        setIsShowProgressBar(true);
         progressBar += Math.round(progressPercent) / 100;
         setProgress(progressBar);
         if (progressPercent == 100) {
           setProgress(1);
+          setIsShowProgressBar(false);
+          setProgress(0);
         }
         switch (snapshot.state) {
           case app.storage.TaskState.PAUSED: // or 'paused'
@@ -96,8 +100,8 @@ function SettingModal() {
       },
       () => {
         // Upload completed successfully, now we can get the download URL
-        uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
-          user.updateProfile({
+        uploadTask.snapshot.ref.getDownloadURL().then(async (downloadURL) => {
+           await user.updateProfile({
             photoURL: downloadURL,
           });
         });
@@ -105,25 +109,6 @@ function SettingModal() {
     );
     // [END storage_upload_handle_error]
   }
-
-  // function animate() {
-  //   let progress = 0;
-  //   setTimeout(() => {
-  //     // this.setState({ indeterminate: false });
-  //     setInterval(() => {
-  //       console.log('Math.random(): ', Math.random());
-  //       progress += Math.random() / 5;
-  //       if (progress > 1) {
-  //         progress = 1;
-  //       }
-  //       setProgress(progress);
-  //     }, 1000);
-  //   }, 500);
-  // }
-
-  // useEffect(() => {
-  //   // animate();
-  // }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -137,12 +122,14 @@ function SettingModal() {
                   uri: imageSource || user.photoURL,
                 }}
               />
+              <View style={{  marginVertical:5, display: isShowProgressBar ? "flex" : "none" }}>
               <Progress.Bar
                 animated={true}
                 progress={progress}
                 indeterminate={indeterminate}
                 width={50}
               />
+              </View>
             </>
           ) : (
             <View style={styles.nonImageView}>
@@ -174,7 +161,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 50,
-    marginBottom: 5,
   },
   imageView: {
     alignItems: 'center',

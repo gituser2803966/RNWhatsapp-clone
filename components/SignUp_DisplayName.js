@@ -23,7 +23,6 @@ export default function Signin({navigation, route}) {
       email,password,firstName,lastName
     }
     signUp(userRegistrationInformation)
-
   };
 
   return (
